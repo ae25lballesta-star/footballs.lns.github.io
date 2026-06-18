@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encore: Rhythm Legend</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0b0a14;
+    --void-2:#15122a;
+    --magenta:#ff2e92;
+    --cyan:#2ee6ff;
+    --gold:#ffc93c;
+    --violet:#5c2e91;
+    --marquee:#f5f0ff;
+    --dim:#9b93c4;
+    --font-display:'Bungee', cursive;
+    --font-body:'Space Grotesk', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 50% 0%, rgba(92,46,145,0.45), transparent 55%),
+      radial-gradient(circle at 85% 90%, rgba(255,46,146,0.18), transparent 50%),
+      var(--void);
+    color:var(--marquee);
+    font-family:var(--font-body);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:18px 12px 40px;
+  }
+  .app{
+    width:100%;
+    max-width:980px;
+  }
+  button{font-family:var(--font-body);cursor:pointer;}
+  .hidden{display:none !important;}
+
+  /* ---------- Marquee header ---------- */
+  .marquee{
+    text-align:center;
+    padding:14px 0 10px;
+  }
+  .marquee h1{
+    font-family:var(--font-display);
+    font-size:clamp(28px, 5vw, 46px);
+    margin:0;
+    letter-spacing:1px;
+    color:var(--marquee);
+    text-shadow:
+      0 0 6px var(--cyan),
+      0 0 18px rgba(46,230,255,0.6),
+      0 0 36px rgba(255,46,146,0.4);
+  }
+  .marquee p{
+    margin:4px 0 0;
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:3px;
+    color:var(--dim);
+    text-transform:uppercase;
+  }
+
+  /* ---------- Nav ---------- */
+  .navrow{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin:14px 0 20px;
+  }
+  .navbtn{
+    background:linear-gradient(160deg, var(--void-2), #1d1838);
+    border:1px solid rgba(255,255,255,0.08);
+    color:var(--dim);
+    padding:9px 16px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:0.5px;
+    transition:all .15s ease;
+  }
+  .navbtn.active{
+    color:var(--void);
+    background:linear-gradient(160deg, var(--cyan), var(--magenta));
+    box-shadow:0 0 16px rgba(255,46,146,0.45);
+  }
+  .navbtn:hover{color:var(--marquee);}
+
+  /* ---------- Card / panel ---------- */
+  .panel{
+    background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:18px;
+    padding:22px;
+    margin-bottom:18px;
+  }
+  .panel h2{
+    font-family:var(--font-display);
+    font-size:18px;
+    margin:0 0 14px;
+    color:var(--gold);
+    letter-spacing:0.5px;
+  }
+  .subtle{color:var(--dim); font-size:13px; line-height:1.5;}
+
+  /* ---------- Profile strip ---------- */
+  .profile-strip{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .profile-strip .stat{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--dim);
+  }
+  .profile-strip .stat b{color:var(--marquee); font-size:15px;}
+  .rank-pill{
+    font-family:var(--font-display);
+    font-size:13px;
+    padding:6px 14px;
+    border-radius:14px;
+    background:linear-gradient(120deg, var(--violet), var(--magenta));
+    color:white;
+  }
+
+  /* ---------- Stage select grid ---------- */
+  .stagegrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));
+    gap:14px;
+  }
+  .stagecard{
+    position:relative;
+    border-radius:14px;
+    padding:16px;
+    border:1px solid rgba(255,255,255,0.08);
+    overflow:hidden;
+    min-height:130px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    transition:transform .15s ease;
+  }
+  .stagecard.unlocked{cursor:pointer;}
+  .stagecard.unlocked:hover{transform:translateY(-3px);}
+  .stagecard.locked{opacity:0.45; filter:grayscale(0.6);}
+  .stagecard .tier{font-family:var(--font-mono); font-size:11px; color:var(--dim); letter-spacing:1px; text-transform:uppercase;}
+  .stagecard h3{font-family:var(--font-display); font-size:16px; margin:6px 0; color:var(--marquee);}
+  .stagecard .stars{font-size:14px; color:var(--gold); letter-spacing:2px;}
+  .stagecard .meta{font-family:var(--font-mono); font-size:11px; color:var(--dim);}
+
+  /* ---------- Customize ---------- */
+  .custom-layout{display:flex; gap:24px; flex-wrap:wrap;}
+  .avatar-box{
+    flex:0 0 180px;
+    text-align:center;
+  }
+  .avatar-box canvas{
+    background:radial-gradient(circle at 50% 30%, rgba(255,255,255,0.06), transparent 70%);
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.08);
+  }
+  .custom-options{flex:1; min-width:240px; display:flex; flex-direction:column; gap:16px;}
+  .option-group label.title{
+    display:block;
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--dim);
+    margin-bottom:8px;
+  }
+  .swatchrow{display:flex; gap:8px; flex-wrap:wrap;}
+  .swatch{
+    width:34px; height:34px; border-radius:50%;
+    border:2px solid rgba(255,255,255,0.15);
+    cursor:pointer;
+  }
+  .swatch.selected{border-color:var(--gold); box-shadow:0 0 10px var(--gold);}
+  .chip{
+    padding:7px 13px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.15);
+    background:rgba(255,255,255,0.03);
+    color:var(--dim);
+    font-size:12px;
+    font-weight:700;
+  }
+  .chip.selected{
+    background:linear-gradient(120deg, var(--cyan), var(--violet));
+    color:white;
+    border-color:transparent;
+  }
+
+  /* ---------- Big action buttons ---------- */
+  .bigbtn{
+    font-family:var(--font-display);
+    font-size:14px;
+    padding:12px 22px;
+    border-radius:12px;
+    border:none;
+    color:var(--void);
+    background:linear-gradient(120deg, var(--gold), var(--magenta));
+    box-shadow:0 4px 18px rgba(255,46,146,0.35);
+  }
+  .bigbtn.secondary{
+    background:linear-gradient(120deg, var(--cyan), var(--violet));
+    color:white;
+  }
+  .bigbtn.ghost{
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.2);
+    color:var(--marquee);
+    box-shadow:none;
+  }
+  .btnrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;}
+
+  /* ---------- Stage arch / gameplay ---------- */
+  .stage-arch{
+    position:relative;
+    border-radius:24px 24px 10px 10px;
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(255,201,60,0.12), transparent 60%),
+      linear-gradient(180deg, #1a1530, #0b0a14 70%);
+    border:1px solid rgba(255,255,255,0.1);
+    padding:14px;
+    overflow:hidden;
+  }
+  .stage-arch::before, .stage-arch::after{
+    content:'';
+    position:absolute;
+    top:0; bottom:0;
+    width:8%;
+    background:linear-gradient(180deg, var(--magenta), var(--violet));
+    opacity:0.25;
+    filter:blur(2px);
+  }
+  .stage-arch::before{left:0; border-radius:0 60px 60px 0;}
+  .stage-arch::after{right:0; border-radius:60px 0 0 60px;}
+  #gameCanvas{
+    display:block;
+    width:100%;
+    height:auto;
+    border-radius:12px;
+    background:transparent;
+  }
+  .hud{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:10px;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .hud-block{font-family:var(--font-mono); font-size:12px; color:var(--dim); text-align:center;}
+  .hud-block b{display:block; font-size:20px; color:var(--marquee);}
+  .combo-flash{color:var(--gold) !important; text-shadow:0 0 10px var(--gold);}
+  .starmeter-wrap{display:flex; align-items:center; gap:6px;}
+  #starmeterFill{transition:height .15s ease;}
+  .key-hints{
+    display:flex;
+    justify-content:space-around;
+    margin-top:8px;
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--dim);
+  }
+  .key-hints span b{color:var(--marquee); display:block; font-size:13px;}
+
+  .feedback-pop{
+    position:absolute;
+    font-family:var(--font-display);
+    font-size:13px;
+    pointer-events:none;
+    opacity:0;
+  }
+
+  .results-banner{
+    text-align:center;
+    font-family:var(--font-display);
+    font-size:30px;
+    margin-bottom:6px;
+    color:var(--gold);
+    text-shadow:0 0 16px rgba(255,201,60,0.6);
+  }
+
+  .versus-row{
+    display:flex;
+    justify-content:space-around;
+    text-align:center;
+    margin:14px 0;
+  }
+  .versus-row .who{font-family:var(--font-mono); font-size:12px; color:var(--dim); text-transform:uppercase;}
+  .versus-row .sc{font-family:var(--font-display); font-size:26px; color:var(--marquee);}
+
+  footer.note{
+    text-align:center;
+    font-size:11px;
+    color:var(--dim);
+    margin-top:10px;
+  }
+  .reset-link{color:var(--dim); text-decoration:underline; cursor:pointer; font-size:11px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="marquee">
+    <h1>ENCORE</h1>
+    <p>Rhythm Legend</p>
+  </div>
+
+  <div class="navrow" id="navRow">
+    <button class="navbtn" data-screen="career">Career Map</button>
+    <button class="navbtn" data-screen="customize">Customize</button>
+    <button class="navbtn" data-screen="training">Training</button>
+    <button class="navbtn" data-screen="battle">Dance Battle</button>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="panel" id="profilePanel">
+    <div class="profile-strip">
+      <canvas id="miniAvatar" width="56" height="80" style="border-radius:10px;background:rgba(255,255,255,0.04);"></canvas>
+      <div class="rank-pill" id="rankPill">Rookie Dancer</div>
+      <div class="stat">Total Stars <b id="statStars">0</b></div>
+      <div class="stat">XP <b id="statXP">0</b></div>
+      <div class="stat">Stage <b id="statStage">The Garage</b></div>
+      <span class="reset-link" id="resetSaveBtn">reset save</span>
+    </div>
+  </div>
+
+  <!-- CAREER MAP SCREEN -->
+  <div id="screen-career">
+    <div class="panel">
+      <h2>Career Map</h2>
+      <p class="subtle">Climb from a basement practice space to a sold-out stadium. Earn stars on each stage to unlock the next.</p>
+      <div class="stagegrid" id="stageGrid"></div>
+    </div>
+  </div>
+
+  <!-- CUSTOMIZE SCREEN -->
+  <div id="screen-customize" class="hidden">
+    <div class="panel">
+      <h2>Customize Your Performer</h2>
+      <div class="custom-layout">
+        <div class="avatar-box">
+          <canvas id="avatarCanvas" width="180" height="240"></canvas>
+        </div>
+        <div class="custom-options" id="customOptions"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRAINING SCREEN -->
+  <div id="screen-training" class="hidden">
+    <div class="panel">
+      <h2>Training Mode</h2>
+      <p class="subtle">Practice choreography at half speed with no pressure. Pick any unlocked stage's routine to drill.</p>
+      <div class="stagegrid" id="trainingGrid"></div>
+    </div>
+  </div>
+
+  <!-- BATTLE SCREEN -->
+  <div id="screen-battle" class="hidden">
+    <div class="panel">
+      <h2>Dance Battle</h2>
+      <p class="subtle">Face an AI dancer on a routine. Whoever performs with higher accuracy wins the crowd.</p>
+      <div class="stagegrid" id="battleGrid"></div>
+    </div>
+  </div>
+
+  <!-- GAMEPLAY SCREEN -->
+  <div id="screen-gameplay" class="hidden">
+    <div class="panel" style="padding:14px;">
+      <div class="stage-arch">
+        <canvas id="gameCanvas" width="900" height="420"></canvas>
+      </div>
+      <div class="hud">
+        <div class="hud-block">SCORE<b id="hudScore">0</b></div>
+        <div class="hud-block">COMBO<b id="hudCombo">0</b></div>
+        <div class="hud-block">ACCURACY<b id="hudAccuracy">100%</b></div>
+        <div class="hud-block" style="min-width:90px;">
+          STAR POWER
+          <div class="starmeter-wrap">
+            <svg width="26" height="26" viewBox="0 0 26 26">
+              <polygon points="13,1 16,9 25,9 18,14.5 20.5,23 13,18 5.5,23 8,14.5 1,9 10,9"
+                fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.2)"/>
+              <clipPath id="starClip"><rect id="starClipRect" x="0" y="26" width="26" height="0"/></clipPath>
+              <polygon points="13,1 16,9 25,9 18,14.5 20.5,23 13,18 5.5,23 8,14.5 1,9 10,9"
+                fill="#FFC93C" clip-path="url(#starClip)"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="key-hints" id="keyHints"></div>
+      <div class="btnrow" style="justify-content:center;">
+        <button class="bigbtn ghost" id="quitGameplayBtn">Exit Performance</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div id="screen-results" class="hidden">
+    <div class="panel">
+      <div class="results-banner" id="resultsBanner">★★★ LEGENDARY ★★★</div>
+      <div id="versusBlock"></div>
+      <div class="versus-row">
+        <div><div class="who">Score</div><div class="sc" id="resScore">0</div></div>
+        <div><div class="who">Accuracy</div><div class="sc" id="resAccuracy">0%</div></div>
+        <div><div class="who">Max Combo</div><div class="sc" id="resCombo">0</div></div>
+      </div>
+      <p class="subtle" style="text-align:center;" id="resXpLine"></p>
+      <div class="btnrow" style="justify-content:center;">
+        <button class="bigbtn" id="retryBtn">Perform Again</button>
+        <button class="bigbtn secondary" id="continueBtn">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="note">An original pop-superstar rhythm experience — music and choreography are procedurally generated, not reproductions of any real artist's work.</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   DATA: stages, moves, customization options
+========================================================= */
+const MOVES = [
+  {key:'slide', label:'SLIDE', color:'#2EE6FF', keys:['ArrowLeft','KeyD']},
+  {key:'spin',  label:'SPIN',  color:'#FF2E92', keys:['ArrowDown','KeyF']},
+  {key:'pop',   label:'POP',   color:'#FFC93C', keys:['ArrowUp','KeyJ']},
+  {key:'freeze',label:'FREEZE',color:'#9B5CFF', keys:['ArrowRight','KeyK']},
+];
+
+const STAGES = [
+  {id:0, name:'The Garage', tier:'Practice Space', bpm:100, duration:32, density:0.55, crowd:14, req:0, color1:'#241f3d', color2:'#0b0a14'},
+  {id:1, name:'Downtown Club', tier:'Local Club', bpm:112, duration:36, density:0.65, crowd:40, req:1, color1:'#3a1f4d', color2:'#120a26'},
+  {id:2, name:'The Velvet Theater', tier:'Theater', bpm:120, duration:40, density:0.72, crowd:90, req:1, color1:'#4a1f55', color2:'#150a2c'},
+  {id:3, name:'Arena Nights', tier:'Arena', bpm:128, duration:44, density:0.8, crowd:160, req:2, color1:'#5c1f5e', color2:'#180a30'},
+  {id:4, name:'Stadium Legend', tier:'World Stadium', bpm:134, duration:50, density:0.88, crowd:260, req:2, color1:'#6e1f63', color2:'#1c0a36'},
+];
+
+const RANKS = ['Rookie Dancer','Club Performer','Theater Headliner','Arena Star','Living Legend'];
+
+const JACKET_COLORS = ['#E63946','#FFC93C','#2EE6FF','#1B1B1B','#9B5CFF'];
+const PANTS_COLORS  = ['#1B1B1B','#2c2c40','#5c1f1f','#264653'];
+const SHOE_COLORS   = ['#FFFFFF','#1B1B1B','#FFC93C','#FF2E92'];
+const HATS = ['none','fedora','snapback'];
+const ACCESSORIES = ['none','glove','glasses','chain'];
+
+/* =========================================================
+   SAVE STATE
+========================================================= */
+const DEFAULT_STATE = {
+  unlockedCount: 1,
+  bestStars: {0:0,1:0,2:0,3:0,4:0},
+  totalXP: 0,
+  customization: {
+    jacket: JACKET_COLORS[0],
+    pants: PANTS_COLORS[0],
+    shoes: SHOE_COLORS[0],
+    hat: 'none',
+    accessory: 'none'
+  }
+};
+let save = JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+async function loadSave(){
+  try{
+    const res = await window.storage.get('encore_save_v1', false);
+    if(res && res.value){
+      const parsed = JSON.parse(res.value);
+      save = Object.assign(JSON.parse(JSON.stringify(DEFAULT_STATE)), parsed);
+    }
+  }catch(e){
+    // no save yet, use defaults
+  }
+  refreshAllUI();
+}
+async function persistSave(){
+  try{
+    await window.storage.set('encore_save_v1', JSON.stringify(save), false);
+  }catch(e){
+    console.warn('save failed', e);
+  }
+}
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+const screens = ['career','customize','training','battle','gameplay','results'];
+function showScreen(name){
+  screens.forEach(s=>{
+    const el = document.getElementById('screen-'+s);
+    if(el) el.classList.toggle('hidden', s!==name);
+  });
+  document.getElementById('profilePanel').classList.toggle('hidden', name==='gameplay');
+  document.querySelectorAll('.navbtn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.screen===name);
+  });
+  if(name!=='gameplay') stopGameplayLoop();
+}
+document.getElementById('navRow').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.navbtn');
+  if(!btn) return;
+  showScreen(btn.dataset.screen);
+});
+document.getElementById('resetSaveBtn').addEventListener('click', async ()=>{
+  if(!confirm('Reset all career progress, stars, and customization?')) return;
+  save = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  await persistSave();
+  refreshAllUI();
+});
+
+/* =========================================================
+   PROFILE / HEADER UI
+========================================================= */
+function totalStars(){
+  return Object.values(save.bestStars).reduce((a,b)=>a+b,0);
+}
+function rankForStars(stars){
+  const idx = Math.min(RANKS.length-1, Math.floor(stars/3));
+  return RANKS[idx];
+}
+function refreshProfile(){
+  const stars = totalStars();
+  document.getElementById('statStars').textContent = stars;
+  document.getElementById('statXP').textContent = save.totalXP;
+  document.getElementById('rankPill').textContent = rankForStars(stars);
+  const lastUnlocked = STAGES[Math.max(0, save.unlockedCount-1)];
+  document.getElementById('statStage').textContent = lastUnlocked.name;
+  drawAvatar(document.getElementById('miniAvatar'));
+}
+
+/* =========================================================
+   AVATAR RENDERING
+========================================================= */
+function drawAvatar(canvas){
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  // design baseline is a 240px-tall figure; scale to whatever canvas height we're given
+  const scale = h/240;
+  ctx.clearRect(0,0,w,h);
+  ctx.save();
+  ctx.translate(w/2, h*0.06);
+  ctx.scale(scale, scale);
+  const c = save.customization;
+
+  // body proportions (drawn centered on local x=0, top-down)
+  // legs
+  ctx.fillStyle = c.pants;
+  ctx.fillRect(-22, 150, 16, 60);
+  ctx.fillRect(6, 150, 16, 60);
+  // shoes
+  ctx.fillStyle = c.shoes;
+  ctx.fillRect(-26, 206, 22, 10);
+  ctx.fillRect(4, 206, 22, 10);
+  // torso / jacket
+  ctx.fillStyle = c.jacket;
+  roundRect(ctx, -30, 80, 60, 78, 14);
+  ctx.fill();
+  // arms
+  ctx.fillStyle = c.jacket;
+  roundRect(ctx, -44, 86, 14, 60, 7); ctx.fill();
+  roundRect(ctx, 30, 86, 14, 60, 7); ctx.fill();
+  // hands
+  ctx.fillStyle = '#e8c39e';
+  ctx.beginPath(); ctx.arc(-37, 150, 8, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(37, 150, 8, 0, Math.PI*2); ctx.fill();
+  if(c.accessory === 'glove'){
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(37, 150, 9, 0, Math.PI*2); ctx.fill();
+  }
+  // head
+  ctx.fillStyle = '#e8c39e';
+  ctx.beginPath(); ctx.arc(0, 55, 26, 0, Math.PI*2); ctx.fill();
+  // glasses
+  if(c.accessory === 'glasses'){
+    ctx.fillStyle = '#111';
+    ctx.fillRect(-22, 48, 44, 9);
+  }
+  // chain
+  if(c.accessory === 'chain'){
+    ctx.strokeStyle = '#FFC93C';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(0, 88, 16, 0.15*Math.PI, 0.85*Math.PI);
+    ctx.stroke();
+  }
+  // hat
+  if(c.hat === 'fedora'){
+    ctx.fillStyle = '#1B1B1B';
+    ctx.fillRect(-30, 30, 60, 8);
+    roundRect(ctx, -18, 16, 36, 18, 6); ctx.fill();
+  } else if(c.hat === 'snapback'){
+    ctx.fillStyle = '#FF2E92';
+    ctx.beginPath(); ctx.arc(0, 38, 24, Math.PI, 0); ctx.fill();
+    ctx.fillRect(-15, 30, 30, 10);
+  }
+  ctx.restore();
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+/* =========================================================
+   CUSTOMIZE SCREEN
+========================================================= */
+function buildCustomizeScreen(){
+  const wrap = document.getElementById('customOptions');
+  wrap.innerHTML = '';
+  wrap.appendChild(buildSwatchGroup('Jacket', JACKET_COLORS, save.customization.jacket, (val)=>{
+    save.customization.jacket = val; persistSave(); refreshAllUI();
+  }));
+  wrap.appendChild(buildSwatchGroup('Pants', PANTS_COLORS, save.customization.pants, (val)=>{
+    save.customization.pants = val; persistSave(); refreshAllUI();
+  }));
+  wrap.appendChild(buildSwatchGroup('Shoes', SHOE_COLORS, save.customization.shoes, (val)=>{
+    save.customization.shoes = val; persistSave(); refreshAllUI();
+  }));
+  wrap.appendChild(buildChipGroup('Hat', HATS, save.customization.hat, (val)=>{
+    save.customization.hat = val; persistSave(); refreshAllUI();
+  }));
+  wrap.appendChild(buildChipGroup('Accessory', ACCESSORIES, save.customization.accessory, (val)=>{
+    save.customization.accessory = val; persistSave(); refreshAllUI();
+  }));
+  drawAvatar(document.getElementById('avatarCanvas'));
+}
+function buildSwatchGroup(title, colors, current, onPick){
+  const group = document.createElement('div');
+  group.className = 'option-group';
+  const label = document.createElement('label');
+  label.className = 'title'; label.textContent = title;
+  group.appendChild(label);
+  const row = document.createElement('div'); row.className = 'swatchrow';
+  colors.forEach(c=>{
+    const sw = document.createElement('div');
+    sw.className = 'swatch' + (c===current?' selected':'');
+    sw.style.background = c;
+    sw.addEventListener('click', ()=>onPick(c));
+    row.appendChild(sw);
+  });
+  group.appendChild(row);
+  return group;
+}
+function buildChipGroup(title, options, current, onPick){
+  const group = document.createElement('div');
+  group.className = 'option-group';
+  const label = document.createElement('label');
+  label.className = 'title'; label.textContent = title;
+  group.appendChild(label);
+  const row = document.createElement('div'); row.className = 'swatchrow';
+  options.forEach(opt=>{
+    const chip = document.createElement('div');
+    chip.className = 'chip' + (opt===current?' selected':'');
+    chip.textContent = opt.charAt(0).toUpperCase()+opt.slice(1);
+    chip.addEventListener('click', ()=>onPick(opt));
+    row.appendChild(chip);
+  });
+  group.appendChild(row);
+  return group;
+}
+
+/* =========================================================
+   STAGE GRIDS (career / training / battle)
+========================================================= */
+function buildStageGrid(containerId, mode){
+  const grid = document.getElementById(containerId);
+  grid.innerHTML = '';
+  STAGES.forEach((stage, idx)=>{
+    const unlocked = idx < save.unlockedCount;
+    const card = document.createElement('div');
+    card.className = 'stagecard ' + (unlocked? 'unlocked':'locked');
+    card.style.background = `linear-gradient(160deg, ${stage.color1}, ${stage.color2})`;
+    const stars = save.bestStars[stage.id] || 0;
+    card.innerHTML = `
+      <div>
+        <div class="tier">${stage.tier}</div>
+        <h3>${stage.name}</h3>
+        <div class="meta">${stage.bpm} BPM · ${stage.duration}s · crowd ${stage.crowd}</div>
+      </div>
+      <div class="stars">${unlocked ? '★'.repeat(stars)+'☆'.repeat(3-stars) : '🔒 locked'}</div>
+    `;
+    if(unlocked){
+      card.addEventListener('click', ()=> startGameplay(stage, mode));
+    }
+    grid.appendChild(card);
+  });
+}
+
+/* =========================================================
+   AUDIO ENGINE (fully procedural, no copyrighted music)
+========================================================= */
+let audioCtx = null;
+function ensureAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playTone(freq, time, dur, type, gainVal){
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type || 'sine';
+  osc.frequency.setValueAtTime(freq, time);
+  gain.gain.setValueAtTime(0.0001, time);
+  gain.gain.exponentialRampToValueAtTime(gainVal || 0.18, time+0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, time+dur);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(time); osc.stop(time+dur+0.02);
+}
+function playNoise(time, dur, gainVal, filterFreq){
+  const bufferSize = audioCtx.sampleRate * dur;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for(let i=0;i<bufferSize;i++) data[i] = Math.random()*2-1;
+  const src = audioCtx.createBufferSource();
+  src.buffer = buffer;
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'highpass';
+  filter.frequency.value = filterFreq || 1500;
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(gainVal || 0.15, time);
+  gain.gain.exponentialRampToValueAtTime(0.0001, time+dur);
+  src.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+  src.start(time); src.stop(time+dur);
+}
+
+const CHORD_PROGRESSION = [
+  [220.0, 261.6, 329.6],  // A min-ish
+  [174.6, 220.0, 261.6],  // F maj-ish
+  [196.0, 246.9, 293.7],  // G maj-ish
+  [164.8, 196.0, 246.9],  // E min-ish
+];
+
+let beatSchedulerActive = false;
+let beatIndex = 0;
+let nextBeatTime = 0;
+let beatDur = 0.25;
+
+function startBacking(bpm){
+  ensureAudio();
+  beatIndex = 0;
+  beatDur = 60/bpm/2; // eighth note
+  nextBeatTime = audioCtx.currentTime + 0.1;
+  beatSchedulerActive = true;
+}
+function stopBacking(){
+  beatSchedulerActive = false;
+}
+function tickBacking(){
+  if(!beatSchedulerActive) return;
+  while(nextBeatTime < audioCtx.currentTime + 0.18){
+    const i = beatIndex % 8;
+    const bar = Math.floor(beatIndex/8) % CHORD_PROGRESSION.length;
+    const chord = CHORD_PROGRESSION[bar];
+    // kick
+    if(i===0 || i===4) playTone(60, nextBeatTime, 0.18, 'sine', 0.3);
+    // clap/snare
+    if(i===2 || i===6) playNoise(nextBeatTime, 0.09, 0.18, 1800);
+    // hihat every eighth, softer on off-beats
+    playNoise(nextBeatTime, 0.04, (i%2===0?0.07:0.04), 6000);
+    // bass note outlining chord root, walking a little
+    if(i===0 || i===3 || i===6){
+      playTone(chord[0]/2, nextBeatTime, 0.18, 'sawtooth', 0.12);
+    }
+    // occasional chord stab
+    if(i===4){
+      chord.forEach(f=>playTone(f, nextBeatTime, 0.3, 'triangle', 0.05));
+    }
+    beatIndex++;
+    nextBeatTime += beatDur;
+  }
+}
+
+function playHitSound(quality){
+  ensureAudio();
+  const t = audioCtx.currentTime;
+  if(quality==='perfect') playTone(880, t, 0.12, 'sine', 0.2);
+  else if(quality==='good') playTone(600, t, 0.1, 'sine', 0.15);
+}
+function playMissSound(){
+  ensureAudio();
+  const t = audioCtx.currentTime;
+  playTone(120, t, 0.18, 'sawtooth', 0.12);
+}
+function playShowstopperSound(){
+  ensureAudio();
+  const t = audioCtx.currentTime;
+  [523,659,784,1046].forEach((f,i)=>playTone(f, t+i*0.06, 0.18, 'triangle', 0.18));
+  playNoise(t, 0.4, 0.25, 800);
+  playTone(50, t, 0.4, 'sine', 0.3);
+}
+
+/* =========================================================
+   PATTERN GENERATION (seeded, deterministic per stage)
+========================================================= */
+function mulberry32(seed){
+  return function(){
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function generatePattern(stage){
+  const rng = mulberry32(stage.id*97 + 13);
+  const beatDur = 60/stage.bpm; // quarter note seconds
+  const totalBeats = Math.floor(stage.duration / beatDur);
+  const notes = [];
+  let lastLane = -1, repeatCount = 0;
+  for(let b=2; b<totalBeats-2; b++){
+    // density controls probability a note appears on this subdivision
+    const subdivisions = rng() < 0.5 ? [0] : [0,0.5]; // sometimes eighth-note pairs
+    subdivisions.forEach(sub=>{
+      if(rng() > stage.density) return;
+      let lane = Math.floor(rng()*4);
+      if(lane===lastLane){
+        repeatCount++;
+        if(repeatCount>1){ lane = (lane+1+Math.floor(rng()*3))%4; repeatCount=0; }
+      } else { repeatCount=0; }
+      lastLane = lane;
+      notes.push({ time: (b+sub)*beatDur, lane, hit:false, judged:false });
+    });
+  }
+  return notes.sort((a,b)=>a.time-b.time);
+}
+
+/* =========================================================
+   PARTICLES
+========================================================= */
+let particles = [];
+function spawnParticles(x,y,color,count){
+  for(let i=0;i<count;i++){
+    const angle = Math.random()*Math.PI*2;
+    const speed = 1+Math.random()*4;
+    particles.push({
+      x,y,
+      vx:Math.cos(angle)*speed,
+      vy:Math.sin(angle)*speed - 1,
+      life:1,
+      color
+    });
+  }
+}
+function updateParticles(dt){
+  particles.forEach(p=>{
+    p.x += p.vx; p.y += p.vy;
+    p.vy += 0.08;
+    p.life -= dt*1.4;
+  });
+  particles = particles.filter(p=>p.life>0);
+}
+function drawParticles(ctx){
+  particles.forEach(p=>{
+    ctx.globalAlpha = Math.max(0,p.life);
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+/* =========================================================
+   GAMEPLAY ENGINE
+========================================================= */
+let gp = null; // current gameplay state
+let rafId = null;
+let crowdDots = [];
+
+function buildKeyHints(){
+  const wrap = document.getElementById('keyHints');
+  wrap.innerHTML = '';
+  MOVES.forEach(m=>{
+    const span = document.createElement('span');
+    const keyName = m.keys[1].replace('Key','').replace('Arrow','');
+    span.innerHTML = `<b style="color:${m.color}">${keyName}</b>${m.label}`;
+    wrap.appendChild(span);
+  });
+}
+buildKeyHints();
+
+function startGameplay(stage, mode, opponentMode){
+  ensureAudio();
+  showScreen('gameplay');
+  const isTraining = mode === 'training';
+  const isBattle = mode === 'battle';
+  const pattern = generatePattern(stage);
+
+  crowdDots = [];
+  const crowdCount = Math.min(140, stage.crowd);
+  for(let i=0;i<crowdCount;i++){
+    crowdDots.push({x:Math.random(), y:0.78+Math.random()*0.18, phase:Math.random()*Math.PI*2, size:1+Math.random()*2});
+  }
+
+  gp = {
+    stage, mode,
+    pattern: pattern.map(n=>({...n})),
+    fallSpeedMul: isTraining ? 0.55 : 1,
+    startTime: null,
+    score:0, combo:0, maxCombo:0,
+    perfectCount:0, goodCount:0, missCount:0,
+    starPower:0,
+    showstopperActive:false,
+    showstopperTimer:0,
+    finished:false,
+    loopsRemaining: isTraining ? 2 : 0,
+    feedbacks: []
+  };
+
+  document.getElementById('quitGameplayBtn').onclick = ()=>{
+    stopGameplayLoop();
+    showScreen(mode==='training' ? 'training' : (mode==='battle' ? 'battle' : 'career'));
+  };
+
+  startBacking(stage.bpm);
+  gp.startTime = audioCtx.currentTime;
+  rafId = requestAnimationFrame(gameplayLoop);
+}
+
+function stopGameplayLoop(){
+  if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+  stopBacking();
+  window.removeEventListener('keydown', handleKeydown);
+  keydownAttached = false;
+}
+
+let keydownAttached = false;
+function attachKeydown(){
+  if(keydownAttached) return;
+  window.addEventListener('keydown', handleKeydown);
+  keydownAttached = true;
+}
+attachKeydown();
+
+function handleKeydown(e){
+  if(!gp || gp.finished) return;
+  if(e.code === 'Space'){
+    triggerShowstopper();
+    return;
+  }
+  const moveIdx = MOVES.findIndex(m=>m.keys.includes(e.code));
+  if(moveIdx===-1) return;
+  const now = audioCtx.currentTime - gp.startTime;
+  judgeHit(moveIdx, now);
+}
+
+function judgeHit(lane, now){
+  // find nearest unjudged note in this lane within window
+  let best = null, bestDiff = Infinity;
+  gp.pattern.forEach(n=>{
+    if(n.lane!==lane || n.judged) return;
+    const diff = Math.abs(n.time - now);
+    if(diff < bestDiff){ bestDiff = diff; best = n; }
+  });
+  if(!best || bestDiff > 0.22){
+    // nothing close enough — minor whiff, small combo penalty only if there WAS a near note
+    return;
+  }
+  best.judged = true;
+  let quality;
+  if(bestDiff <= 0.08){ quality='perfect'; gp.perfectCount++; gp.score += 100*comboMultiplier(); gp.starPower=Math.min(100,gp.starPower+9); }
+  else { quality='good'; gp.goodCount++; gp.score += 50*comboMultiplier(); gp.starPower=Math.min(100,gp.starPower+4); }
+  gp.combo++;
+  gp.maxCombo = Math.max(gp.maxCombo, gp.combo);
+  playHitSound(quality);
+  addFeedback(lane, quality==='perfect'?'PERFECT':'GOOD', quality==='perfect'?'#FFC93C':'#2EE6FF');
+}
+function comboMultiplier(){
+  const base = gp.showstopperActive ? 2 : 1;
+  if(gp.combo>=30) return 4*base;
+  if(gp.combo>=20) return 3*base;
+  if(gp.combo>=10) return 2*base;
+  return 1*base;
+}
+function addFeedback(lane, text, color){
+  gp.feedbacks.push({lane, text, color, life:1});
+}
+function triggerShowstopper(){
+  if(!gp || gp.starPower < 100 || gp.showstopperActive) return;
+  gp.starPower = 0;
+  gp.showstopperActive = true;
+  gp.showstopperTimer = 4.5;
+  playShowstopperSound();
+  spawnParticles(450, 200, '#FFC93C', 40);
+  spawnParticles(450, 200, '#FF2E92', 30);
+  spawnParticles(450, 200, '#2EE6FF', 30);
+}
+
+function missNote(n){
+  n.judged = true;
+  gp.missCount++;
+  gp.combo = 0;
+  playMissSound();
+}
+
+let lastFrameTime = null;
+function gameplayLoop(ts){
+  if(!gp) return;
+  if(lastFrameTime===null) lastFrameTime = ts;
+  const dt = Math.min(0.05, (ts-lastFrameTime)/1000);
+  lastFrameTime = ts;
+
+  tickBacking();
+
+  const now = audioCtx.currentTime - gp.startTime;
+
+  // mark missed notes
+  gp.pattern.forEach(n=>{
+    if(!n.judged && n.time < now - 0.22) missNote(n);
+  });
+
+  if(gp.showstopperActive){
+    gp.showstopperTimer -= dt;
+    if(gp.showstopperTimer<=0) gp.showstopperActive=false;
+    if(Math.random()<0.3) spawnParticles(100+Math.random()*700, 50+Math.random()*100,
+      ['#FFC93C','#FF2E92','#2EE6FF'][Math.floor(Math.random()*3)], 3);
+  }
+
+  updateParticles(dt);
+  gp.feedbacks.forEach(f=>f.life-=dt*1.5);
+  gp.feedbacks = gp.feedbacks.filter(f=>f.life>0);
+
+  renderGameplay(now);
+  updateHud();
+
+  const allJudged = gp.pattern.every(n=>n.judged);
+  const songOver = now > gp.stage.duration;
+
+  if(songOver && allJudged && !gp.finished){
+    if(gp.mode==='training' && gp.loopsRemaining>0){
+      gp.loopsRemaining--;
+      gp.pattern.forEach(n=>n.judged=false);
+      gp.startTime = audioCtx.currentTime;
+      beatIndex = 0; nextBeatTime = audioCtx.currentTime+0.1;
+    } else {
+      gp.finished = true;
+      finishPerformance();
+      return;
+    }
+  }
+
+  rafId = requestAnimationFrame(gameplayLoop);
+}
+
+function updateHud(){
+  document.getElementById('hudScore').textContent = gp.score;
+  const comboEl = document.getElementById('hudCombo');
+  comboEl.textContent = gp.combo;
+  comboEl.classList.toggle('combo-flash', gp.combo>0 && gp.combo%10===0);
+  const totalJudged = gp.perfectCount+gp.goodCount+gp.missCount;
+  const acc = totalJudged ? Math.round(((gp.perfectCount + gp.goodCount*0.5)/totalJudged)*100) : 100;
+  document.getElementById('hudAccuracy').textContent = acc+'%';
+  document.getElementById('starClipRect').setAttribute('y', 26 - (gp.starPower/100*26));
+  document.getElementById('starClipRect').setAttribute('height', gp.starPower/100*26);
+}
+
+function renderGameplay(now){
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // background
+  const stage = gp.stage;
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, stage.color1);
+  grad.addColorStop(1, stage.color2);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,W,H);
+
+  // spotlight sweep
+  const sweepX = W/2 + Math.sin(now*0.6)*W*0.3;
+  const spot = ctx.createRadialGradient(sweepX, 0, 10, sweepX, 0, 380);
+  spot.addColorStop(0, gp.showstopperActive?'rgba(255,201,60,0.25)':'rgba(255,255,255,0.10)');
+  spot.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = spot;
+  ctx.fillRect(0,0,W,H);
+
+  // crowd
+  crowdDots.forEach(d=>{
+    const tw = 0.4+0.6*Math.abs(Math.sin(now*3+d.phase));
+    ctx.globalAlpha = tw;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(d.x*W, d.y*H, d.size, 0, Math.PI*2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+
+  // lanes
+  const laneW = W/4;
+  const targetY = H*0.82;
+  MOVES.forEach((m,i)=>{
+    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+    ctx.fillRect(i*laneW+4, 0, laneW-8, H);
+    // target marker
+    ctx.strokeStyle = m.color;
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(i*laneW+10, targetY);
+    ctx.lineTo((i+1)*laneW-10, targetY);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    // lane label
+    ctx.fillStyle = m.color;
+    ctx.font = '11px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(m.label, i*laneW+laneW/2, targetY+22);
+  });
+
+  // falling notes
+  const lookAheadTime = 1.9 / gp.fallSpeedMul;
+  gp.pattern.forEach(n=>{
+    const dtToHit = n.time - now;
+    if(dtToHit > lookAheadTime || dtToHit < -0.3) return;
+    const progress = 1 - (dtToHit/lookAheadTime);
+    const y = progress * targetY;
+    const m = MOVES[n.lane];
+    const cx = n.lane*laneW + laneW/2;
+    ctx.save();
+    ctx.translate(cx, y);
+    ctx.fillStyle = n.judged ? 'rgba(255,255,255,0.15)' : m.color;
+    drawMoveIcon(ctx, n.lane, 16);
+    ctx.restore();
+  });
+
+  // feedback text
+  gp.feedbacks.forEach(f=>{
+    const cx = f.lane*laneW + laneW/2;
+    ctx.globalAlpha = Math.max(0,f.life);
+    ctx.fillStyle = f.color;
+    ctx.font = 'bold 16px "Bungee", cursive';
+    ctx.textAlign='center';
+    ctx.fillText(f.text, cx, targetY - 40*(1-f.life));
+    ctx.globalAlpha = 1;
+  });
+
+  drawParticles(ctx);
+
+  if(gp.showstopperActive){
+    ctx.fillStyle = 'rgba(255,201,60,0.06)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = '#FFC93C';
+    ctx.font = 'bold 26px "Bungee", cursive';
+    ctx.textAlign = 'center';
+    ctx.fillText('★ SHOWSTOPPER ★', W/2, 50);
+  } else if(gp.starPower>=100){
+    ctx.fillStyle = '#FFC93C';
+    ctx.font = 'bold 14px "Bungee", cursive';
+    ctx.textAlign = 'center';
+    ctx.fillText('PRESS SPACE FOR SHOWSTOPPER', W/2, 30);
+  }
+
+  if(gp.mode==='training'){
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.font = '11px "JetBrains Mono", monospace';
+    ctx.textAlign='left';
+    ctx.fillText('TRAINING · HALF SPEED · LOOPS LEFT: '+gp.loopsRemaining, 10, 16);
+  }
+}
+
+function drawMoveIcon(ctx, lane, r){
+  ctx.beginPath();
+  if(lane===0){ // slide -> chevron back
+    ctx.moveTo(r,-r); ctx.lineTo(-r,0); ctx.lineTo(r,r); ctx.lineTo(r*0.3,0);
+  } else if(lane===1){ // spin -> swirl circle
+    ctx.arc(0,0,r,0.2,Math.PI*1.6);
+  } else if(lane===2){ // pop -> burst
+    for(let i=0;i<8;i++){
+      const a = i/8*Math.PI*2;
+      const rr = i%2===0 ? r : r*0.45;
+      ctx[i===0?'moveTo':'lineTo'](Math.cos(a)*rr, Math.sin(a)*rr);
+    }
+  } else { // freeze -> star/diamond
+    ctx.moveTo(0,-r); ctx.lineTo(r,0); ctx.lineTo(0,r); ctx.lineTo(-r,0);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+/* =========================================================
+   RESULTS / PROGRESSION
+========================================================= */
+function finishPerformance(){
+  stopGameplayLoop();
+  const totalNotes = gp.perfectCount+gp.goodCount+gp.missCount;
+  const accuracy = totalNotes ? Math.round(((gp.perfectCount + gp.goodCount*0.5)/totalNotes)*100) : 100;
+  let stars = 0, label = 'KEEP PRACTICING';
+  if(accuracy>=90){ stars=3; label='★★★ LEGENDARY ★★★'; }
+  else if(accuracy>=70){ stars=2; label='★★ STAR POWER ★★'; }
+  else if(accuracy>=50){ stars=1; label='★ RISING TALENT ★'; }
+
+  document.getElementById('resultsBanner').textContent = label;
+  document.getElementById('resScore').textContent = gp.score;
+  document.getElementById('resAccuracy').textContent = accuracy+'%';
+  document.getElementById('resCombo').textContent = gp.maxCombo;
+  const versusBlock = document.getElementById('versusBlock');
+  versusBlock.innerHTML = '';
+
+  let xpGain = 0;
+  let resultLine = '';
+
+  if(gp.mode === 'battle'){
+    const rng = mulberry32(gp.stage.id*53 + 7);
+    const aiAccuracy = Math.round((0.5 + rng()*0.4 + gp.stage.id*0.02) * 100);
+    const aiScore = Math.round(aiAccuracy * 9.5 * (1+gp.stage.id*0.15));
+    const playerWins = gp.score >= aiScore;
+    versusBlock.innerHTML = `
+      <div class="versus-row">
+        <div><div class="who">You</div><div class="sc">${gp.score}</div></div>
+        <div><div class="who">AI Rival</div><div class="sc">${aiScore}</div></div>
+      </div>
+      <p class="subtle" style="text-align:center;font-family:var(--font-display);color:${playerWins?'#FFC93C':'#FF2E92'}">
+        ${playerWins ? 'YOU WON THE CROWD!' : 'THE RIVAL STOLE THE SHOW'}
+      </p>
+    `;
+    xpGain = playerWins ? 60 : 20;
+  } else if(gp.mode === 'training'){
+    resultLine = 'Training run complete — no career stars or XP awarded. Drill it again any time.';
+  } else { // career
+    const prevStars = save.bestStars[gp.stage.id] || 0;
+    if(stars > prevStars){
+      save.bestStars[gp.stage.id] = stars;
+    }
+    xpGain = stars*40 + Math.round(gp.score/50);
+    save.totalXP += xpGain;
+    if(stars>=1 && gp.stage.id === save.unlockedCount-1 && save.unlockedCount < STAGES.length){
+      const nextStage = STAGES[save.unlockedCount];
+      if(stars >= nextStage.req){
+        save.unlockedCount++;
+        resultLine = `New stage unlocked: ${nextStage.name}! `;
+      }
+    }
+    resultLine += `Earned ${xpGain} XP.`;
+    persistSave();
+  }
+
+  document.getElementById('resXpLine').textContent = resultLine;
+
+  document.getElementById('retryBtn').onclick = ()=> startGameplay(gp.stage, gp.mode);
+  document.getElementById('continueBtn').onclick = ()=>{
+    refreshAllUI();
+    showScreen(gp.mode==='training' ? 'training' : (gp.mode==='battle' ? 'battle' : 'career'));
+  };
+
+  showScreen('results');
+}
+
+/* =========================================================
+   GLOBAL REFRESH
+========================================================= */
+function refreshAllUI(){
+  refreshProfile();
+  buildStageGrid('stageGrid', 'career');
+  buildStageGrid('trainingGrid', 'training');
+  buildStageGrid('battleGrid', 'battle');
+  buildCustomizeScreen();
+}
+
+/* =========================================================
+   INIT
+========================================================= */
+showScreen('career');
+loadSave();
+
+})();
+</script>
+</body>
+</html>
